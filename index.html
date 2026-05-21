@@ -357,7 +357,7 @@ select.note-sel{background:var(--bg);border:1.5px solid var(--border);border-rad
 <script>
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // JSONBIN CONFIG — auto-syncs across all devices
-const JSONBIN_KEY = '$2a$10$b3AYrrqVpI8eiOfWs9DDaO5s42.led8okU2KultK2aKRfxu6FXQPG';
+const JSONBIN_KEY = '$2a$10$rchNEP6gA.PZEBbDaC6hbuMwrTzFJCoXhxsuplW2g8lsw4iszrYF6';
 const JSONBIN_BIN = '6a0ed18fee5a733b12f5e6e5';
 const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -390,8 +390,6 @@ async function loadFromCloud() {
     const data = await res.json();
     if (data.entries) entries = data.entries;
     if (data.health) health = data.health;
-    // Also migrate any local data not yet in cloud
-    mergeLocalData();
     setSyncStatus('', '☁️ Synced across all devices');
     setTimeout(() => { const b = document.getElementById('sync-bar'); if(b) b.style.display='none' }, 3000);
   } catch(e) {
