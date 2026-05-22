@@ -1030,7 +1030,17 @@ setTimeout(()=>{
   if(s){s.classList.add('hide');setTimeout(()=>{if(s.parentNode)s.parentNode.removeChild(s)},700)}
 },1600);
 
+//initForm();
+//loadFromCloud();
 initForm();
+
+function recoverOldData(){
+  // Search ALL localStorage keys, not just known ones
+  const allKeys = Object.keys(localStorage);
+  alert('All localStorage keys: ' + allKeys.join(', '));
+}
+
+recoverOldData();
 loadFromCloud();
 </script>
 </body>
