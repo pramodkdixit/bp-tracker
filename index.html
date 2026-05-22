@@ -1033,7 +1033,7 @@ setTimeout(()=>{
 initForm();
 
 function recoverOldData(){
-  const keys=['bpt_entries','bpt_v4_entries','bpt_health'];
+  const keys=['bpt_entries','bpt_v4_entries'];
   let allEntries=[];
   for(const k of keys){
     try{
@@ -1051,13 +1051,15 @@ function recoverOldData(){
     const seen=new Set();
     entries=entries.filter(e=>{if(seen.has(String(e.id)))return false;seen.add(String(e.id));return true});
     entries.sort((a,b)=>b.ts-a.ts);
-    alert('Recovered '+entries.length+' total entries! Saving...');
     saveToCloud();
+    renderList();
+    updateHeader();
+    alert('Done! '+entries.length+' total entries saved.');
   }
 }
 
-recoverOldData();
 loadFromCloud();
+setTimeout(recoverOldData, 3000);
 </script>
 </body>
 </html>
