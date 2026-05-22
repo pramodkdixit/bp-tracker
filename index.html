@@ -1034,10 +1034,10 @@ initForm();
 loadFromCloud();
 
 setTimeout(function(){
-  const d = localStorage.getItem('bpt_v4_entries');
-  if(!d){ alert('bpt_v4_entries is EMPTY or missing'); return; }
+  const d = localStorage.getItem('bpt_entries');
+  if(!d){ alert('bpt_entries is EMPTY or missing'); return; }
   const arr = JSON.parse(d);
-  alert('bpt_v4_entries has '+arr.length+' entries. First one: '+JSON.stringify(arr[0]));
+  alert('bpt_entries has '+arr.length+' entries. First one: '+JSON.stringify(arr[0]));
 }, 3000);
 loadFromCloud();
 setTimeout(recoverOldData, 3000);
