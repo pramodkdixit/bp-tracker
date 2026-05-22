@@ -1031,29 +1031,6 @@ setTimeout(()=>{
 },1600);
 
 initForm();
-
-function recoverOldData(){
-  const keys=['bpt_entries','bpt6_entries','bpt5_entries','bpt_v4_entries','bpt_entries_v3','bp_tracker_entries_v2'];
-  for(const k of keys){
-    try{
-      const d=localStorage.getItem(k);
-      if(d){
-        const arr=JSON.parse(d);
-        if(arr.length){
-          alert('Found '+arr.length+' entries! Tap OK to import.');
-          entries=[...entries,...arr];
-          // Deduplicate
-          const seen=new Set();
-          entries=entries.filter(e=>{if(seen.has(String(e.id)))return false;seen.add(String(e.id));return true});
-          entries.sort((a,b)=>b.ts-a.ts);
-          saveToCloud();
-        }
-      }
-    }catch{}
-  }
-}
-
-recoverOldData();
 loadFromCloud();
 </script>
 </body>
