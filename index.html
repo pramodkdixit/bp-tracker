@@ -1032,16 +1032,6 @@ setTimeout(()=>{
 
 initForm();
 loadFromCloud();
-
-setTimeout(function(){
-  const d = localStorage.getItem('bpt_health');
-  if(!d){ alert('bpt_health is EMPTY or missing'); return; }
-  const arr = JSON.parse(d);
-  alert('bpt_health has '+arr.length+' entries. First one: '+JSON.stringify(arr[0]));
-}, 3000);
-loadFromCloud();
-setTimeout(recoverOldData, 3000);
-
 </script>
 </body>
 </html>
