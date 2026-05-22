@@ -1031,35 +1031,17 @@ setTimeout(()=>{
 },1600);
 
 initForm();
+loadFromCloud();
 
-function recoverOldData(){
-  const keys=['bpt_entries','bpt_v4_entries'];
-  let allEntries=[];
-  for(const k of keys){
-    try{
-      const d=localStorage.getItem(k);
-      if(d){
-        const arr=JSON.parse(d);
-        if(Array.isArray(arr)&&arr.length){
-          allEntries=[...allEntries,...arr];
-        }
-      }
-    }catch{}
-  }
-  if(allEntries.length){
-    entries=[...entries,...allEntries];
-    const seen=new Set();
-    entries=entries.filter(e=>{if(seen.has(String(e.id)))return false;seen.add(String(e.id));return true});
-    entries.sort((a,b)=>b.ts-a.ts);
-    saveToCloud();
-    renderList();
-    updateHeader();
-    alert('Done! '+entries.length+' total entries saved.');
-  }
-}
-
+setTimeout(function(){
+  const d = localStorage.getItem('bpt_v4_entries');
+  if(!d){ alert('bpt_v4_entries is EMPTY or missing'); return; }
+  const arr = JSON.parse(d);
+  alert('bpt_v4_entries has '+arr.length+' entries. First one: '+JSON.stringify(arr[0]));
+}, 3000);
 loadFromCloud();
 setTimeout(recoverOldData, 3000);
+
 </script>
 </body>
 </html>
