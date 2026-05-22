@@ -1030,14 +1030,30 @@ setTimeout(()=>{
   if(s){s.classList.add('hide');setTimeout(()=>{if(s.parentNode)s.parentNode.removeChild(s)},700)}
 },1600);
 
-//initForm();
-//loadFromCloud();
 initForm();
 
 function recoverOldData(){
-  // Search ALL localStorage keys, not just known ones
-  const allKeys = Object.keys(localStorage);
-  alert('All localStorage keys: ' + allKeys.join(', '));
+  const keys=['bpt_entries','bpt_v4_entries','bpt_health'];
+  let allEntries=[];
+  for(const k of keys){
+    try{
+      const d=localStorage.getItem(k);
+      if(d){
+        const arr=JSON.parse(d);
+        if(Array.isArray(arr)&&arr.length){
+          allEntries=[...allEntries,...arr];
+        }
+      }
+    }catch{}
+  }
+  if(allEntries.length){
+    entries=[...entries,...allEntries];
+    const seen=new Set();
+    entries=entries.filter(e=>{if(seen.has(String(e.id)))return false;seen.add(String(e.id));return true});
+    entries.sort((a,b)=>b.ts-a.ts);
+    alert('Recovered '+entries.length+' total entries! Saving...');
+    saveToCloud();
+  }
 }
 
 recoverOldData();
