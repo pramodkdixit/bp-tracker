@@ -10,6 +10,7 @@
 <title>BP Tracker</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSJ1cmwoI2cpIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NkYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4p2k77iPPC90ZXh0Pjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -341,7 +342,39 @@ select.note-sel{background:var(--bg);border:1.5px solid var(--border);border-rad
     <div class="sec">Health Log</div>
     <div id="health-list"></div>
   </div>
-
+<div class="modal-overlay hide" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>✏️ Edit Reading</span>
+      <button class="modal-close" onclick="closeEdit()">✕</button>
+    </div>
+    <input type="hidden" id="edit-id">
+    <div class="g3">
+      <div class="field"><label>💜 Systolic</label><input type="number" id="edit-sys" class="big-in" inputmode="numeric" style="color:#6366F1"></div>
+      <div class="field"><label>💚 Diastolic</label><input type="number" id="edit-dia" class="big-in" inputmode="numeric" style="color:#10B981"></div>
+      <div class="field"><label>🩷 Pulse</label><input type="number" id="edit-pulse" class="big-in" inputmode="numeric" style="color:#EC4899"></div>
+    </div>
+    <div class="field"><label>🕐 Date & Time</label><input type="datetime-local" id="edit-time"></div>
+    <div class="field">
+      <label>📝 Context</label>
+      <select id="edit-note-sel" onchange="onEditNoteChange()">
+        <option value="">— Select context —</option>
+        <option value="Before food">🍽️ Before food</option>
+        <option value="After food">🍽️ After food</option>
+        <option value="Before physical activity">🏃 Before physical activity</option>
+        <option value="After physical activity">🏃 After physical activity</option>
+        <option value="After beverage / tea / coffee">☕ After beverage / tea / coffee</option>
+        <option value="Before sleep">🌙 Before sleep</option>
+        <option value="After wakeup">🌅 After wakeup</option>
+        <option value="custom">✏️ Custom…</option>
+      </select>
+      <div id="edit-custom-wrap" style="display:none;margin-top:8px">
+        <input type="text" id="edit-note-custom" placeholder="Type your note…">
+      </div>
+    </div>
+    <button class="btn btn-grad" onclick="saveEdit()"><span>💾</span><span>Save Changes</span></button>
+  </div>
+</div>
 </div><!-- /app -->
 
 <!-- NAV -->
@@ -629,7 +662,7 @@ function renderList() {
         <div class="ebp"><span>${e.sys}/${e.dia}</span><span class="epulse">💓 ${e.pulse}</span><span class="badge ${c.cls}">${c.lbl}</span></div>
         <div class="emeta">🕐 ${fmtDT(e.ts)}${e.note?`<span class="enote">📝 ${e.note}</span>`:''}</div>
       </div>
-      <button class="del-btn" onclick="delEntry('${e.id}')">✕</button>
+      <button class="del-btn" onclick="delEntry('${e.id}')">✕</button><button class="del-btn" onclick="openEdit('${e.id}')" style="color:#6366F1;font-size:14px">✏️</button>
     </div>`;
   }).join('');
 }
@@ -731,6 +764,12 @@ function printReport() {
     tr:nth-child(even){background:#F8F9FF}
     .print-btn{background:#6366F1;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px}
     @media print{.print-btn{display:none}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hide{display:none}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:430px;animation:slideup .25s ease}
+.modal-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:4px}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
   </style></head><body>
   <h1>❤️ BP Report</h1>
   <div class="meta">Period: <b>${period}</b> &nbsp;·&nbsp; Generated: ${new Date().toLocaleString('en-IN')} &nbsp;·&nbsp; ${data.length} readings</div>
