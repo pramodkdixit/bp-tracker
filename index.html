@@ -992,7 +992,9 @@ document.getElementById('import-input').addEventListener('change',function(){
     }catch{}
     const imgUrl=URL.createObjectURL(file);
     const result=await Tesseract.recognize(imgUrl,'eng',{
-      logger:m=>{if(m.status==='recognizing text'){lbl.innerHTML='<span class="spin"></span>Scanning… '+Math.round(m.progress*100)+'%'}}
+      logger:m=>{if(m.status==='recognizing text'){lbl.innerHTML='<span class="spin"></span>Scanning… '+Math.round(m.progress*100)+'%'}},
+      tessedit_char_whitelist:'0123456789 /',
+      tessedit_pageseg_mode:'6'
     });
     URL.revokeObjectURL(imgUrl);
     const t=result.data.text.replace(/[oO]/g,'0').replace(/[lI|]/g,'1');
