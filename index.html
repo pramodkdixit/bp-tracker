@@ -343,39 +343,7 @@ select.note-sel{background:var(--bg);border:1.5px solid var(--border);border-rad
     <div class="sec">Health Log</div>
     <div id="health-list"></div>
   </div>
-<div class="modal-overlay hide" id="edit-modal">
-  <div class="modal">
-    <div class="modal-title">
-      <span>✏️ Edit Reading</span>
-      <button class="modal-close" onclick="closeEdit()">✕</button>
-    </div>
-    <input type="hidden" id="edit-id">
-    <div class="g3">
-      <div class="field"><label>💜 Systolic</label><input type="number" id="edit-sys" class="big-in" inputmode="numeric" style="color:#6366F1"></div>
-      <div class="field"><label>💚 Diastolic</label><input type="number" id="edit-dia" class="big-in" inputmode="numeric" style="color:#10B981"></div>
-      <div class="field"><label>🩷 Pulse</label><input type="number" id="edit-pulse" class="big-in" inputmode="numeric" style="color:#EC4899"></div>
-    </div>
-    <div class="field"><label>🕐 Date & Time</label><input type="datetime-local" id="edit-time"></div>
-    <div class="field">
-      <label>📝 Context</label>
-      <select id="edit-note-sel" onchange="onEditNoteChange()">
-        <option value="">— Select context —</option>
-        <option value="Before food">🍽️ Before food</option>
-        <option value="After food">🍽️ After food</option>
-        <option value="Before physical activity">🏃 Before physical activity</option>
-        <option value="After physical activity">🏃 After physical activity</option>
-        <option value="After beverage / tea / coffee">☕ After beverage / tea / coffee</option>
-        <option value="Before sleep">🌙 Before sleep</option>
-        <option value="After wakeup">🌅 After wakeup</option>
-        <option value="custom">✏️ Custom…</option>
-      </select>
-      <div id="edit-custom-wrap" style="display:none;margin-top:8px">
-        <input type="text" id="edit-note-custom" placeholder="Type your note…">
-      </div>
-    </div>
-    <button class="btn btn-grad" onclick="saveEdit()"><span>💾</span><span>Save Changes</span></button>
-  </div>
-</div>
+f</div>
 </div><!-- /app -->
 
 <!-- NAV -->
@@ -765,12 +733,6 @@ function printReport() {
     tr:nth-child(even){background:#F8F9FF}
     .print-btn{background:#6366F1;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px}
     @media print{.print-btn{display:none}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.modal-overlay.hide{display:none}
-.modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:430px;animation:slideup .25s ease}
-.modal-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-.modal-close{background:none;border:none;font-size:22px;color:var(--text3);cursor:pointer;padding:4px}
-@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
   </style></head><body>
   <h1>❤️ BP Report</h1>
   <div class="meta">Period: <b>${period}</b> &nbsp;·&nbsp; Generated: ${new Date().toLocaleString('en-IN')} &nbsp;·&nbsp; ${data.length} readings</div>
