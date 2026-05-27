@@ -4,14 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BP Tracker">
 <meta name="theme-color" content="#6366F1">
 <title>BP Tracker</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSJ1cmwoI2cpIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NkYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4p2k77iPPC90ZXh0Pjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -343,7 +341,7 @@ select.note-sel{background:var(--bg);border:1.5px solid var(--border);border-rad
     <div class="sec">Health Log</div>
     <div id="health-list"></div>
   </div>
-f</div>
+
 </div><!-- /app -->
 
 <!-- NAV -->
@@ -631,7 +629,7 @@ function renderList() {
         <div class="ebp"><span>${e.sys}/${e.dia}</span><span class="epulse">💓 ${e.pulse}</span><span class="badge ${c.cls}">${c.lbl}</span></div>
         <div class="emeta">🕐 ${fmtDT(e.ts)}${e.note?`<span class="enote">📝 ${e.note}</span>`:''}</div>
       </div>
-      <button class="del-btn" onclick="delEntry('${e.id}')">✕</button><button class="del-btn" onclick="openEdit('${e.id}')" style="color:#6366F1;font-size:14px">✏️</button>
+      <button class="del-btn" onclick="delEntry('${e.id}')">✕</button>
     </div>`;
   }).join('');
 }
@@ -960,59 +958,50 @@ document.getElementById('import-input').addEventListener('change',function(){
   };
   r.readAsText(file); this.value='';
 });
-function extractExifDate(buf){
-  try{
-    const v=new DataView(buf);if(v.getUint16(0)!==0xFFD8)return null;
-    let o=2;
-    while(o<v.byteLength-4){
-      const mk=v.getUint16(o),ln=v.getUint16(o+2);
-      if(mk===0xFFE1){
-        const hdr=String.fromCharCode(...new Uint8Array(buf,o+4,6));
-        if(hdr.startsWith('Exif')){
-          const to=o+10,le=v.getUint16(to)===0x4949;
-          const ifd=to+v.getUint32(to+4,le);
-          const rs=(p,l)=>String.fromCharCode(...new Uint8Array(buf,p,l)).replace(/\0/g,'').trim();
-          const ft=(st,tag)=>{try{const cnt=v.getUint16(st,le);for(let i=0;i<cnt;i++){const e=st+2+i*12;if(v.getUint16(e,le)===tag)return rs(to+v.getUint32(e+8,le),19)}}catch{}return null};
-          let ds=null;
-          try{const cnt=v.getUint16(ifd,le);for(let i=0;i<cnt;i++){const e=ifd+2+i*12;if(v.getUint16(e,le)===0x8769){ds=ft(to+v.getUint32(e+8,le),0x9003);break}}}catch{}
-          if(!ds)ds=ft(ifd,0x0132);
-          if(ds){const m=ds.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3]+'T'+m[4]+':'+m[5]}
-        }
-      }
-      if(mk===0xFFDA)break;o+=2+ln;
-    }
-  }catch{}return null;
-}
+
 // ── PHOTO SCAN ────────────────────────────────────────────
 document.getElementById('photo-input').addEventListener('change',async function(){
-  const file=this.files[0];if(!file)return;
+  const file=this.files[0]; if(!file) return;
   const lbl=document.getElementById('cam-lbl');
-  lbl.innerHTML='<span class="spin"></span>Starting scan…';
+  lbl.innerHTML='<span class="spin"></span>Reading photo…';
   try{
-    const buf=await file.arrayBuffer();
-    const exifDt=extractExifDate(buf);
-    if(exifDt){const tEl=document.getElementById('f-time');if(tEl)tEl.value=exifDt}
-    const imgUrl=URL.createObjectURL(file);
-    const result=await Tesseract.recognize(imgUrl,'eng',{
-      logger:m=>{if(m.status==='recognizing text'){lbl.innerHTML='<span class="spin"></span>Scanning… '+Math.round(m.progress*100)+'%'}}
+    const[buf,b64]=await Promise.all([
+      file.arrayBuffer(),
+      new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(file)})
+    ]);
+    // EXIF date
+    try{
+      const v=new DataView(buf);
+      if(v.getUint16(0)===0xFFD8){
+        let o=2;
+        while(o<v.byteLength-4){
+          const mk=v.getUint16(o),ln=v.getUint16(o+2);
+          if(mk===0xFFE1){
+            const hdr=String.fromCharCode(...new Uint8Array(buf,o+4,6));
+            if(hdr.startsWith('Exif')){
+              const to=o+10,le=v.getUint16(to)===0x4949;
+              const ifd=to+v.getUint32(to+4,le);
+              const rs=(p,l)=>String.fromCharCode(...new Uint8Array(buf,p,l)).replace(/\0/g,'').trim();
+              const ft=(start,tag)=>{try{const cnt=v.getUint16(start,le);for(let i=0;i<cnt;i++){const e=start+2+i*12;if(v.getUint16(e,le)===tag)return rs(to+v.getUint32(e+8,le),19)}}catch{}return null};
+              let ds=null;
+              try{const cnt=v.getUint16(ifd,le);for(let i=0;i<cnt;i++){const e=ifd+2+i*12;if(v.getUint16(e,le)===0x8769){ds=ft(to+v.getUint32(e+8,le),0x9003);break}}}catch{}
+              if(!ds)ds=ft(ifd,0x0132);
+              if(ds){const m=ds.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2})/);if(m){const tEl=document.getElementById('f-time');if(tEl)tEl.value=`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`}}
+            }
+          }
+          if(mk===0xFFDA)break;o+=2+ln;
+        }
+      }
+    }catch{}
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:120,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},
+          {type:'text',text:'Extract BP reading from this image. Return ONLY JSON: {"sys":number,"dia":number,"pulse":number}. Use null if not visible.'}
+        ]}]})
     });
-    URL.revokeObjectURL(imgUrl);
-    const t=result.data.text.replace(/[oO]/g,'0').replace(/[lI|]/g,'1');
-    const bp={sys:null,dia:null,pulse:null};
-    const sl=t.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
-    if(sl){bp.sys=+sl[1];bp.dia=+sl[2]}
-    if(!bp.sys){const n=(t.match(/\b(\d{2,3})\b/g)||[]).map(Number).filter(n=>n>=70&&n<=220).sort((a,b)=>b-a);if(n.length>=2){bp.sys=n[0];bp.dia=n[1]}}
-    const pm=t.match(/(?:PUL|PULSE|PR|HR)\s*:?\s*(\d{2,3})/i);
-    if(pm){bp.pulse=+pm[1]}else{const n=(t.match(/\b(\d{2,3})\b/g)||[]).map(Number).filter(n=>n>=40&&n<=180&&n!==bp.sys&&n!==bp.dia);if(n.length)bp.pulse=n[0]}
-    if(bp.sys){document.getElementById('f-sys').value=bp.sys}
-    if(bp.dia){document.getElementById('f-dia').value=bp.dia}
-    if(bp.pulse){document.getElementById('f-pulse').value=bp.pulse}
-    updatePreview();
-    lbl.textContent=bp.sys&&bp.dia?'✓ Got '+bp.sys+'/'+bp.dia+(bp.pulse?' · pulse '+bp.pulse:'')+(exifDt?' · time from photo':'')+' — check & save':'Could not read — enter manually';
-  }catch(e){lbl.textContent='Scan failed — enter manually'}
-  this.value='';
-  setTimeout(()=>{lbl.textContent='Scan BP monitor photo'},8000);
-});    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
     const txt=(data.content||[]).find(b=>b.type==='text')?.text||'{}';
     const p=JSON.parse(txt.replace(/```json|```/g,'').trim());
